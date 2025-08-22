@@ -29,7 +29,7 @@ export const useBuildSystem = (addLog: AddLogFn, appConfig: string, plugins: Plu
         }
     }, []);
 
-    const handleBuildAll = useCallback(async () => {
+    const handleBuildAll = useCallback(async (): Promise<void> => {
         startLiveMetrics();
         addLog('INFO', 'Build process started for all targets.');
         addLog('INFO', `Reading config from toolkit.conf.json... App: ${JSON.parse(appConfig).appName}`);
@@ -70,7 +70,6 @@ export const useBuildSystem = (addLog: AddLogFn, appConfig: string, plugins: Plu
 
         addLog('SUCCESS', 'All build targets processed.');
         stopLiveMetrics();
-        return 'finished'; // to signal completion
     }, [addLog, startLiveMetrics, stopLiveMetrics, appConfig, plugins]);
 
     const handleDistributeClick = useCallback((target: BuildTarget) => {

@@ -18,6 +18,7 @@ import DistributionModal from './DistributionModal';
 import { AiDevelopmentCard } from './AiDevelopmentCard';
 import { BuildsCard } from './BuildsCard';
 import { SpinnerIcon } from './icons/SpinnerIcon';
+import { Modal } from './Modal';
 
 // Icons
 import { PlugIcon } from './icons/PlugIcon';
@@ -28,6 +29,8 @@ import { ShieldIcon } from './icons/ShieldIcon';
 import { ScriptIcon } from './icons/ScriptIcon';
 import { ChatIcon } from './icons/ChatIcon';
 import { LockIcon } from './icons/LockIcon';
+import { GithubIcon } from './icons/GithubIcon';
+import { ChevronDownIcon } from './icons/ChevronDownIcon';
 
 
 const Dashboard: React.FC = () => {
@@ -46,9 +49,12 @@ const Dashboard: React.FC = () => {
   const [expandedPlugin, setExpandedPlugin] = useState<string | null>(null);
   const [configPrompt, setConfigPrompt] = useState('');
   const [scriptPrompt, setScriptPrompt] = useState('');
+  const [ciStatus, setCiStatus] = useState<'Passing' | 'Failing' | 'Running'>('Passing');
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [securityAuditResult, setSecurityAuditResult] = useState('');
 
   // Custom Hooks for complex logic
-  const { isProcessing: isAiProcessing, performAiAction, setProcessingState } = useAiApi(addLog);
+  const { isProcessing, performAiAction, setProcessingState } = useAiApi(addLog);
   
   const {
     targets, metrics, liveMetrics, distributionModalTarget, setDistributionModalTarget, handleBuildAll, handleDistributeClick, handlePackage
@@ -76,8 +82,8 @@ const Dashboard: React.FC = () => {
       setProcessingState('package', false);
   }, [handlePackage, setProcessingState]);
 
-  const handleAnalyzeLog = useCallback(() => {
-    return performAiAction(
+  const handleAnalyzeLog = useCallback(async () => {
+    return await performAiAction(
         'analyzeLog', 
         'You are a build process expert. Analyze the following terminal build log and provide a concise summary with any potential errors or optimization suggestions. Format your response with markdown.', 
         logs.map(l => `[${l.level}] ${l.message}`).join('\n')
@@ -111,8 +117,54 @@ const Dashboard: React.FC = () => {
   
   const handleSecurityAudit = useCallback(async () => {
     const result = await performAiAction('security', 'You are a security expert specializing in Rust and web applications. Analyze the following Rust Tauri commands for potential security vulnerabilities like command injection, path traversal, or excessive permissions. Provide a concise summary of findings and recommendations. If no issues are found, state that. Use markdown for formatting.', rustApiCode);
-    alert(`AI Security Audit:\n\n${result}`); // Keeping alert for this one for brevity, could be a modal.
+    setSecurityAuditResult(result);
+    setIsSecurityModalOpen(true);
   }, [performAiAction, rustApiCode]);
+
+  const handleTogglePlugin = useCallback((pluginId: string) => {
+    setPlugins(prev => prev.map(p => p.id === pluginId ? { ...p, enabled: !p.enabled } : p));
+  }, []);
+
+  const handleCiCdRun = useCallback(async () => {
+    setProcessingState('ci', true);
+    setCiStatus('Running');
+    addLog('INFO', 'CI/CD Pipeline triggered manually...');
+
+    const steps = [
+        { name: 'Install Dependencies', duration: 2000, success: true },
+        { name: 'Lint Code', duration: 1500, success: true },
+        { name: 'Run Tests', duration: 3000, success: Math.random() > 0.1 }, // 10% chance to fail
+        { name: 'Build Project', duration: 4000, success: true },
+    ];
+    
+    let pipelineSuccess = true;
+    for (const step of steps) {
+        if (!pipelineSuccess && step.name === 'Build Project') {
+            addLog('WARN', 'Skipping build step due to previous test failure.');
+            break;
+        }
+        addLog('INFO', `\x1b[36m[CI]\x1b[0m Starting step: ${step.name}`);
+        await new Promise(res => setTimeout(res, step.duration));
+        if (step.success) {
+            addLog('SUCCESS', `\x1b[36m[CI]\x1b[0m Step '${step.name}' completed successfully.`);
+        } else {
+            addLog('ERROR', `\x1b[36m[CI]\x1b[0m Step '${step.name}' failed.`);
+            pipelineSuccess = false;
+        }
+    }
+    
+    if (pipelineSuccess) {
+        addLog('SUCCESS', '\x1b[32mCI/CD Pipeline finished successfully.\x1b[0m');
+        setCiStatus('Passing');
+    } else {
+        addLog('ERROR', '\x1b[31mCI/CD Pipeline finished with errors.\x1b[0m');
+        setCiStatus('Failing');
+    }
+    
+    setProcessingState('ci', false);
+
+}, [addLog, setProcessingState]);
+
 
   return (
     <>
@@ -120,7 +172,7 @@ const Dashboard: React.FC = () => {
         
         {/* Column 1 */}
         <div className="flex flex-col gap-6">
-          <AiDevelopmentCard isProcessing={isAiProcessing} performAiAction={performAiAction} />
+          <AiDevelopmentCard isProcessing={isProcessing} performAiAction={performAiAction} />
           
           <InfoCard title="Managed State & Mutability" icon={<LockIcon />}>
               <p className="text-xs text-gray-400 mb-4">Demonstrate how Rust's `Mutex` prevents data races by locking state during concurrent access. Run the simulation to see threads safely increment a shared counter.</p>
@@ -134,9 +186,9 @@ const Dashboard: React.FC = () => {
                       </div>
                   </div>
               </div>
-               <button onClick={handleMutexDemoAction} disabled={isAiProcessing['mutex']} className="w-full bg-graphql-pink hover:bg-pink-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2">
-                  {isAiProcessing['mutex'] && <SpinnerIcon />}
-                  <span>{isAiProcessing['mutex'] ? 'Simulation Running...' : 'Run Concurrency Simulation'}</span>
+               <button onClick={handleMutexDemoAction} disabled={isProcessing['mutex']} className="w-full bg-graphql-pink hover:bg-pink-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2">
+                  {isProcessing['mutex'] && <SpinnerIcon />}
+                  <span>{isProcessing['mutex'] ? 'Simulation Running...' : 'Run Concurrency Simulation'}</span>
               </button>
           </InfoCard>
 
@@ -150,13 +202,13 @@ const Dashboard: React.FC = () => {
           <InfoCard title="JS-Rust API Bridge" icon={<PlugIcon />}>
               <CodeEditor language="rust" code={rustApiCode} setCode={setRustApiCode} height="h-40" />
               <div className="grid grid-cols-2 gap-2 my-2">
-                  <button onClick={() => handleApiBridgeAi('docstrings')} disabled={isAiProcessing['docstrings']} className="bg-graphql-pink/80 hover:bg-graphql-pink disabled:bg-gray-600 text-white font-bold py-2 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-2">
-                       {isAiProcessing['docstrings'] && <SpinnerIcon className="w-4 h-4" />}
-                       <span>{isAiProcessing['docstrings'] ? '...' : 'Generate Docstrings'}</span>
+                  <button onClick={() => handleApiBridgeAi('docstrings')} disabled={isProcessing['docstrings']} className="bg-graphql-pink/80 hover:bg-graphql-pink disabled:bg-gray-600 text-white font-bold py-2 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-2">
+                       {isProcessing['docstrings'] && <SpinnerIcon className="w-4 h-4" />}
+                       <span>{isProcessing['docstrings'] ? '...' : 'Generate Docstrings'}</span>
                   </button>
-                  <button onClick={() => handleApiBridgeAi('snippet')} disabled={isAiProcessing['snippet']} className="bg-graphql-pink/80 hover:bg-graphql-pink disabled:bg-gray-600 text-white font-bold py-2 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-2">
-                      {isAiProcessing['snippet'] && <SpinnerIcon className="w-4 h-4" />}
-                      <span>{isAiProcessing['snippet'] ? '...' : 'Generate JS Snippet'}</span>
+                  <button onClick={() => handleApiBridgeAi('snippet')} disabled={isProcessing['snippet']} className="bg-graphql-pink/80 hover:bg-graphql-pink disabled:bg-gray-600 text-white font-bold py-2 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-2">
+                      {isProcessing['snippet'] && <SpinnerIcon className="w-4 h-4" />}
+                      <span>{isProcessing['snippet'] ? '...' : 'Generate JS Snippet'}</span>
                   </button>
               </div>
               <CodeEditor language="javascript" code={jsApiCode} setCode={setJsApiCode} isReadOnly={false} height="h-24" />
@@ -164,21 +216,49 @@ const Dashboard: React.FC = () => {
 
           <InfoCard title="API Security Audit" icon={<ShieldIcon />}>
               <p className="text-xs text-gray-400 mb-4">The AI will analyze the Rust commands from the API bridge panel for potential security vulnerabilities like path traversal or command injection.</p>
-              <button onClick={handleSecurityAudit} disabled={isAiProcessing['security']} className="w-full bg-rust-orange hover:bg-orange-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2">
-                  {isAiProcessing['security'] && <SpinnerIcon />}
-                  <span>{isAiProcessing['security'] ? 'Analyzing...' : 'Run AI Security Audit'}</span>
+              <button onClick={handleSecurityAudit} disabled={isProcessing['security']} className="w-full bg-rust-orange hover:bg-orange-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2">
+                  {isProcessing['security'] && <SpinnerIcon />}
+                  <span>{isProcessing['security'] ? 'Analyzing...' : 'Run AI Security Audit'}</span>
               </button>
           </InfoCard>
 
-          <InfoCard title="Application Configuration" icon={<CogIcon />}>
-              <CodeEditor language="json" code={appConfig} setCode={setAppConfig} height="h-40"/>
-              <div className="flex gap-2 mt-2">
-                  <input type="text" placeholder="e.g., 'Change title to My Tauri App'" onChange={e => setConfigPrompt(e.target.value)} className="flex-grow p-2 bg-primary-dark border border-border-dark rounded-md focus:ring-2 focus:ring-accent-blue focus:outline-none font-mono text-xs" />
-                  <button onClick={handleConfigAi} disabled={isAiProcessing['config']} className="bg-wasm-purple hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-xs flex items-center justify-center space-x-2">
-                      {isAiProcessing['config'] && <SpinnerIcon className="w-4 h-4" />}
-                      <span>{isAiProcessing['config'] ? '...' : 'Apply'}</span>
+          <InfoCard title="Plugin Manager" icon={<GridIcon />}>
+            <p className="text-xs text-gray-400 mb-4">Enable or disable plugins to extend core functionality. The build process will include code for active plugins.</p>
+            <div className="space-y-2">
+              {plugins.map((plugin) => (
+                <div key={plugin.id} className="bg-primary-dark border border-border-dark rounded-md transition-all duration-200">
+                  <button
+                    onClick={() => setExpandedPlugin(expandedPlugin === plugin.id ? null : plugin.id)}
+                    className="w-full flex items-center justify-between p-3 text-left"
+                  >
+                    <span className="font-semibold text-gray-200">{plugin.name}</span>
+                    <div className="flex items-center space-x-3">
+                      <label htmlFor={`plugin-toggle-${plugin.id}`} className="flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative">
+                          <input id={`plugin-toggle-${plugin.id}`} type="checkbox" className="sr-only" checked={plugin.enabled} onChange={() => handleTogglePlugin(plugin.id)} />
+                          <div className={`block w-10 h-6 rounded-full transition-colors ${plugin.enabled ? 'bg-accent-blue' : 'bg-gray-600'}`}></div>
+                          <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${plugin.enabled ? 'transform translate-x-4' : ''}`}></div>
+                        </div>
+                      </label>
+                      <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedPlugin === plugin.id ? 'rotate-180' : ''}`} />
+                    </div>
                   </button>
-              </div>
+                  {expandedPlugin === plugin.id && (
+                    <div className="p-3 border-t border-border-dark">
+                      <p className="text-xs text-gray-400 mb-3">{plugin.description}</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {plugin.components.map(comp => (
+                          <div key={comp.type} className="flex items-center space-x-2">
+                            <span className={`w-2 h-2 rounded-full ${comp.status === 'Included' ? 'bg-accent-green' : 'bg-gray-500'}`}></span>
+                            <span className="text-gray-400">{comp.type}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </InfoCard>
         </div>
 
@@ -187,9 +267,9 @@ const Dashboard: React.FC = () => {
           <BuildsCard 
             targets={targets}
             logs={logs}
-            isBuilding={isAiProcessing['build']}
-            isPackaging={isAiProcessing['package']}
-            isAnalyzing={isAiProcessing['analyzeLog']}
+            isBuilding={isProcessing['build']}
+            isPackaging={isProcessing['package']}
+            isAnalyzing={isProcessing['analyzeLog']}
             handleBuildAll={handleBuildSystemAction}
             handleDistributeClick={handleDistributeClick}
             handleAnalyzeLog={handleAnalyzeLog}
@@ -198,18 +278,57 @@ const Dashboard: React.FC = () => {
           <InfoCard title="AI Assistant" icon={<ChatIcon />}>
               <AIAssistantChat addLog={addLog} />
           </InfoCard>
+
+          <InfoCard title="Application Configuration" icon={<CogIcon />}>
+              <CodeEditor language="json" code={appConfig} setCode={setAppConfig} height="h-40"/>
+              <div className="flex gap-2 mt-2">
+                  <input type="text" placeholder="e.g., 'Change title to My Tauri App'" onChange={e => setConfigPrompt(e.target.value)} className="flex-grow p-2 bg-primary-dark border border-border-dark rounded-md focus:ring-2 focus:ring-accent-blue focus:outline-none font-mono text-xs" />
+                  <button onClick={handleConfigAi} disabled={isProcessing['config']} className="bg-wasm-purple hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-xs flex items-center justify-center space-x-2">
+                      {isProcessing['config'] && <SpinnerIcon className="w-4 h-4" />}
+                      <span>{isProcessing['config'] ? '...' : 'Apply'}</span>
+                  </button>
+              </div>
+          </InfoCard>
+
+          <InfoCard title="Project Health & CI/CD" icon={<GithubIcon />}>
+            <div className="flex items-center justify-between p-3 bg-primary-dark rounded-md border border-border-dark mb-4">
+                <span className="text-sm font-semibold">CI/CD Status</span>
+                <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                    ciStatus === 'Passing' ? 'bg-green-500/20 text-accent-green' :
+                    ciStatus === 'Failing' ? 'bg-red-500/20 text-red-500' :
+                    'bg-blue-500/20 text-accent-blue animate-pulse'
+                }`}>
+                    {ciStatus}
+                </span>
+            </div>
+            <div className="space-y-2 mb-4 text-sm">
+                <a href="./docs/contributing.md" target="_blank" rel="noopener noreferrer" className="block text-accent-blue hover:underline">› Contribution Guide</a>
+                <a href="./docs/roadmap.md" target="_blank" rel="noopener noreferrer" className="block text-accent-blue hover:underline">› Project Roadmap</a>
+                <a href="./docs/labels.md" target="_blank" rel="noopener noreferrer" className="block text-accent-blue hover:underline">› Issue Labels Guide</a>
+            </div>
+            <p className="text-xs text-gray-500 text-center mb-4">
+              Automated releases are triggered by pushing a version tag.
+            </p>
+            <button onClick={handleCiCdRun} disabled={isProcessing['ci']} className="w-full mt-auto bg-gray-600 hover:bg-gray-500 disabled:bg-gray-800 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center space-x-2">
+                {isProcessing['ci'] && <SpinnerIcon />}
+                <span>{isProcessing['ci'] ? 'Pipeline Running...' : 'Run CI/CD Pipeline'}</span>
+            </button>
+          </InfoCard>
         </div>
       </div>
       <DistributionModal
         target={distributionModalTarget}
         onClose={() => setDistributionModalTarget(null)}
-        isPackaging={isAiProcessing['package']}
+        isPackaging={isProcessing['package']}
         onPackage={(format) => {
             if (distributionModalTarget) {
                 handlePackageAction(distributionModalTarget, format);
             }
         }}
       />
+      <Modal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} title="AI Security Audit Results">
+          {securityAuditResult}
+      </Modal>
     </>
   );
 };

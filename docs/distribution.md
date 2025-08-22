@@ -48,3 +48,20 @@ Distribution for iOS is almost exclusively handled through Apple's official chan
 
 -   **App Store**: Packages your application (`.ipa`) for submission to the Apple App Store, the primary way users install apps on iPhones and iPads.
 -   **TestFlight**: A service provided by Apple to distribute beta versions of your app to a select group of testers before the official release.
+---
+
+## Automated Releases with GitHub Actions
+
+To streamline the release process, Corrosion uses a GitHub Actions workflow that automates building, packaging, and publishing new versions of the application.
+
+### How it Works
+
+1.  **Trigger**: The workflow is automatically triggered whenever a new Git tag is pushed to the repository that follows the version format `v*.*.*` (e.g., `v1.0.0`, `v1.2.3-beta`).
+
+2.  **Build**: The action runs jobs that simulate building the application for Linux, macOS, and Windows. In a real-world scenario, these jobs would perform the actual compilation and packaging steps for each platform.
+
+3.  **Create Release**: Once the builds are complete, the workflow creates a new, public **GitHub Release**. The release is titled with the version tag.
+
+4.  **Attach Assets**: The built artifacts (e.g., `corrosion-linux.tar.gz`, `corrosion-macos.dmg`, `corrosion-windows.zip`) are automatically uploaded to the GitHub Release as assets.
+
+This process ensures that every release is consistent, and the packaged application is immediately available for users to download directly from the project's GitHub page. You can view the workflow configuration in the `.github/workflows/release.yml` file.

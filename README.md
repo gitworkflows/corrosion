@@ -17,7 +17,7 @@ Corrosion demonstrates an architectural pattern popularized by frameworks like [
 -   **JS-Rust API Bridge**: A message-passing system allowing the UI to control the system securely.
 -   **State Management**: Safely manage shared application state across threads using Rust's concurrency primitives.
 -   **Polyglot Plugin System**: Extend the core with plugins that can include Rust, JavaScript, and native mobile code (Kotlin/Swift).
--   **Distribution**: Package your application for all major platforms from a single codebase.
+-   **Distribution**: Package your application for all major platforms from a single codebase, with an automated release pipeline powered by GitHub Actions.
 -   **AI-Powered Backend**: Serverless functions act as a secure proxy to the Google Gemini API.
 
 ## AI-Powered Features
@@ -34,9 +34,17 @@ The dashboard demonstrates a full suite of AI capabilities, including:
 
 ...and more. See the [AI Features documentation](./docs/ai-features.md) for a complete list.
 
+## Contributing
+
+We welcome contributions from the community! If you're interested in helping improve Corrosion, please check out our:
+
+-   **[Contribution Guide](./docs/contributing.md)** to learn how to get started.
+-   **[Project Roadmap](./docs/roadmap.md)** to see what we're planning for the future.
+-   Please use our **[GitHub Issue Templates](.github/ISSUE_TEMPLATE)** when reporting bugs or requesting features.
+
 ## Local Development & Deployment
 
-For complete instructions on setting up your local environment (with and without serverless functions) and deploying to Vercel or Netlify, please refer to our detailed guides:
+For complete instructions on setting up your local environment (with and without serverless functions), deploying to Vercel or Netlify, or **running with Docker**, please refer to our detailed guides:
 
 -   **[Getting Started Guide](./docs/getting-started.md)**
 -   **[State Management Guide](./docs/state-management.md)**

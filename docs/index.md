@@ -15,7 +15,7 @@ This documentation will guide you through the architecture, setup, core concepts
 ## Table of Contents
 
 -   **[Getting Started](./getting-started.md)**
-    -   Your first steps: prerequisites, installation, and running the project locally.
+    -   Your first steps: prerequisites, installation, and running the project locally (including Docker).
 -   **[Core Concepts](./core-concepts.md)**
     -   Understand the architecture: the Rust core, the WebView frontend, and the API bridge.
 -   **[The JS-Rust API Bridge](./api-bridge.md)**
@@ -28,7 +28,13 @@ This documentation will guide you through the architecture, setup, core concepts
     -   Understand how to extend the core functionality of your application with plugins.
 -   **[AI-Powered Features](./ai-features.md)**
     -   A comprehensive guide to all 10+ AI features integrated into the toolkit.
--   **[Distribution](./distribution.md)**
-    -   Learn how to package and distribute your application for all major platforms.
+-   **[Distribution & Releases](./distribution.md)**
+    -   Learn how to package your app and automate releases with GitHub Actions.
 -   **[Deployment](./deployment.md)**
-    -   Step-by-step instructions for deploying your application to Vercel and Netlify.
+    -   Step-by-step instructions for deploying to Vercel, Netlify, and with Docker.
+-   **[Contributing](./contributing.md)**
+    -   Learn how you can contribute to the project.
+-   **[Roadmap](./roadmap.md)**
+    -   See the future direction of the Corrosion toolkit.
+-   **[Issue Labels](./labels.md)**
+    -   Understand our issue labeling system.

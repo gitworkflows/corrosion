@@ -8,6 +8,7 @@ Before you begin, ensure you have the following installed:
 
 -   [Node.js](https://nodejs.org/) (LTS version recommended)
 -   [npm](https://www.npmjs.com/) (comes with Node.js)
+-   (For Option C) [Docker](https://www.docker.com/get-started/)
 -   (Optional but Recommended) The CLI for your preferred deployment platform:
     -   [Vercel CLI](https://vercel.com/docs/cli)
     -   [Netlify CLI](https://docs.netlify.com/cli/get-started/)
@@ -21,9 +22,9 @@ git clone <repository_url>
 cd corrosion-toolkit
 ```
 
-## 2. Install Dependencies
+## 2. Install Dependencies (For Serverless Only)
 
-The project uses a `package.json` to manage serverless function dependencies. Run the following command in the project root:
+The project uses a `package.json` to manage serverless function dependencies. This is **only required for Option B**.
 
 ```bash
 npm install
@@ -31,7 +32,7 @@ npm install
 
 ## 3. Running the Dashboard
 
-You have two options for running the dashboard locally.
+You have three options for running the dashboard locally.
 
 ### Option A: Simple Static Server (No AI Features)
 
@@ -79,7 +80,23 @@ Now, run the command for your chosen platform from the project root:
 
 The CLI will start a local server (usually on a port like `3000` or `8888`) and print the URL in the terminal. Open this URL in your browser.
 
-You now have the full Corrosion dashboard experience running locally, with all AI features fully functional.
+### Option C: Running with Docker (No AI Features)
+
+This option provides a consistent, isolated environment using Docker. Note that this runs the static frontend only; it does not include the serverless backend for AI features.
+
+1.  **Build the Docker Image**:
+    From the root of the project, run the build command:
+    ```bash
+    docker build -t corrosion-dashboard .
+    ```
+
+2.  **Run the Docker Container**:
+    Once the image is built, run it. This command maps port 8080 on your local machine to port 80 inside the container.
+    ```bash
+    docker run -p 8080:80 corrosion-dashboard
+    ```
+
+3.  Open your browser to `http://localhost:8080`.
 
 ## Next Steps
 
