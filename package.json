@@ -1,0 +1,12 @@
+{
+  "name": "rust-graphql-wasm-gui",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@google/genai": "1.15.0"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}

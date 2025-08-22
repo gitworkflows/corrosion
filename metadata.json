@@ -1,0 +1,5 @@
+{
+  "name": "Corrosion Toolkit",
+  "description": "A dashboard demonstrating Corrosion, a composable toolkit for building cross-platform desktop apps with a Rust core, a webview-rendered frontend, and a flexible JS-Rust message-passing API.",
+  "requestFramePermissions": []
+}
