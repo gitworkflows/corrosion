@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import type { BuildTarget, DistributionFormat } from '../types';
+import { SpinnerIcon } from './icons/SpinnerIcon';
 
 interface DistributionModalProps {
   target: BuildTarget | null;
   onClose: () => void;
   onPackage: (format: DistributionFormat) => void;
+  isPackaging: boolean;
 }
 
-const DistributionModal: React.FC<DistributionModalProps> = ({ target, onClose, onPackage }) => {
+const DistributionModal: React.FC<DistributionModalProps> = ({ target, onClose, onPackage, isPackaging }) => {
   const [selectedFormat, setSelectedFormat] = useState<DistributionFormat | null>(null);
 
   useEffect(() => {
@@ -55,10 +57,10 @@ const DistributionModal: React.FC<DistributionModalProps> = ({ target, onClose, 
           </button>
           <button
             onClick={handlePackageClick}
-            disabled={!selectedFormat}
-            className="px-4 py-2 bg-accent-blue hover:bg-blue-600 disabled:bg-gray-700 text-white font-bold rounded-md transition-colors"
+            disabled={!selectedFormat || isPackaging}
+            className="px-4 py-2 bg-accent-blue hover:bg-blue-600 disabled:bg-gray-700 text-white font-bold rounded-md transition-colors w-32 flex items-center justify-center"
           >
-            Package
+            {isPackaging ? <SpinnerIcon /> : 'Package'}
           </button>
         </div>
       </div>

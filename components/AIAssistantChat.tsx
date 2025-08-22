@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { callGemini } from '../services/geminiService';
 import { LogEntry } from '../types';
+import { SpinnerIcon } from './icons/SpinnerIcon';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -53,7 +54,7 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({ addLog }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-2 bg-primary-dark border border-border-dark rounded-md mb-2">
+      <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-2 bg-primary-dark border border-border-dark rounded-md mb-2 min-h-[200px]">
         {messages.map((msg, index) => (
           <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
             <div className={`rounded-lg px-3 py-2 max-w-xs lg:max-w-md ${msg.role === 'user' ? 'bg-accent-blue text-white' : 'bg-secondary-dark text-gray-300'}`}>
@@ -82,9 +83,9 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({ addLog }) => {
         <button
           onClick={handleSendMessage}
           disabled={isLoading || !input.trim()}
-          className="bg-accent-blue hover:bg-blue-600 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-r-md transition-colors"
+          className="bg-accent-blue hover:bg-blue-600 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-r-md transition-colors flex items-center justify-center w-20"
         >
-          Send
+          {isLoading ? <SpinnerIcon className="w-5 h-5" /> : 'Send'}
         </button>
       </div>
     </div>
