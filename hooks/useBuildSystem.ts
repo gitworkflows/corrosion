@@ -1,7 +1,6 @@
-import { useState, useCallback, useRef } from 'react';
-import type { BuildTarget, LogEntry, BuildStatus, DistributionFormat, PerformanceMetric, Plugin } from '../types';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import type { BuildTarget, LogEntry, BuildStatus, DistributionFormat, PerformanceMetric, Plugin, AddLogFn } from '../types';
 import { INITIAL_TARGETS, INITIAL_METRICS } from '../constants';
-import type { AddLogFn } from './useAiApi';
 
 export const useBuildSystem = (addLog: AddLogFn, appConfig: string, plugins: Plugin[]) => {
     const [targets, setTargets] = useState<BuildTarget[]>(INITIAL_TARGETS);
@@ -27,6 +26,15 @@ export const useBuildSystem = (addLog: AddLogFn, appConfig: string, plugins: Plu
             liveMetricsInterval.current = null;
             setTimeout(() => setLiveMetrics([]), 3000);
         }
+    }, []);
+
+    // Add cleanup effect for the interval to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (liveMetricsInterval.current) {
+                clearInterval(liveMetricsInterval.current);
+            }
+        };
     }, []);
 
     const handleBuildAll = useCallback(async (): Promise<void> => {

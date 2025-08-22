@@ -1,8 +1,6 @@
 import { useState, useCallback } from 'react';
 import { callGemini } from '../services/geminiService';
-import type { LogEntry } from '../types';
-
-export type AddLogFn = (level: LogEntry['level'], message: string) => void;
+import type { AddLogFn } from '../types';
 
 export const useAiApi = (addLog: AddLogFn) => {
     const [isProcessing, setIsProcessing] = useState<Record<string, boolean>>({});

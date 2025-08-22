@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { AddLogFn } from './useAiApi';
+import type { AddLogFn } from '../types';
 
 export const useMutexDemo = (addLog: AddLogFn) => {
     const [sharedCounter, setSharedCounter] = useState(0);

@@ -11,6 +11,8 @@ export interface LogEntry {
   message: string;
 }
 
+export type AddLogFn = (level: LogEntry['level'], message: string) => void;
+
 export type BuildPlatform = 'Linux' | 'macOS' | 'Windows' | 'Android' | 'iOS';
 export type BuildStatus = 'Queued' | 'Building' | 'Success' | 'Failed' | 'Not Started';
 

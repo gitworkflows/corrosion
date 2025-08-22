@@ -34,6 +34,29 @@ The dashboard demonstrates a full suite of AI capabilities, including:
 
 ...and more. See the [AI Features documentation](./docs/ai-features.md) for a complete list.
 
+## Cross-Compilation with Docker
+
+This project includes a Docker-based cross-compilation environment for building Linux `aarch64` (ARM64) binaries from an `x86_64` host. This is a practical demonstration of the toolkit's cross-platform capabilities.
+
+The environment is defined in `docker/cross-aarch64/`.
+
+### Building the Image
+
+```bash
+docker build -t corrosion-cross-aarch64 -f docker/cross-aarch64/aarch64.Dockerfile docker/cross-aarch64
+```
+
+### Compiling a Project
+
+Mount your project's source code into the container and run the build command:
+
+```bash
+docker run --rm -v .:/work -w /work corrosion-cross-aarch64 \
+  cargo build --target=aarch64-unknown-linux-gnu --release
+```
+
+The compiled binary will be in `target/aarch64-unknown-linux-gnu/release/`.
+
 ## Contributing
 
 We welcome contributions from the community! If you're interested in helping improve Corrosion, please check out our:
@@ -50,4 +73,4 @@ For complete instructions on setting up your local environment (with and without
 -   **[State Management Guide](./docs/state-management.md)**
 -   **[Plugin System Guide](./docs/plugins.md)**
 -   **[Distribution Guide](./docs/distribution.md)**
--   **[Deployment Guide](./docs/deployment.md)**
+-   **[Deployment Guide](./docs/deployment.md)

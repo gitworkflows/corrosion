@@ -24,6 +24,7 @@ const CodeEditor: React.FC<CodeEditorProps> = React.memo(({ language, code, setC
         value={code}
         onChange={handleChange}
         readOnly={isReadOnly}
+        aria-label={`${language} code editor`}
         className="flex-grow w-full p-3 bg-transparent text-gray-300 font-mono text-sm resize-none focus:outline-none"
         spellCheck="false"
       />
